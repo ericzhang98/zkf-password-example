@@ -1,12 +1,14 @@
-import { MASTER_PASSWORD } from "./password";
+const nodecrypto = require('crypto');
+const snarkjs = require("snarkjs");
+const fs = require("fs");
 
 /**
  * This interface represents the full set of values that represent a
  * proof of knowledge of the master password.
  */
 export interface FullProof {
-  // TODO: fill this in
-  valid: boolean;
+  proof: string;
+  publicSignals: [string]
 }
 
 /**
@@ -15,8 +17,21 @@ export interface FullProof {
 export async function generateProofOfPasswordKnowledge(
   password: string
 ): Promise<FullProof> {
+
+  const hashedPassword = nodecrypto.createHash('sha256').update(password).digest('hex');
+  console.log("hashed password:", hashedPassword);
+  const hashedPasswordInt = parseInt(hashedPassword, 16);
+  console.log("integer encoding:", hashedPasswordInt)
+
+  const { proof, publicSignals } = await snarkjs.groth16.fullProve({x: hashedPasswordInt}, "src/hash.wasm", "src/hash.zkey");
+
+  console.log("Proof: ");
+  console.log(JSON.stringify(proof, null, 1));
+  console.log("Public signals: ")
+  console.log(publicSignals);
+
   return {
-    valid: password === MASTER_PASSWORD,
+    proof, publicSignals
   };
 }
 
@@ -27,5 +42,19 @@ export async function generateProofOfPasswordKnowledge(
 export async function verifyPasswordKnowledge(
   fullProof: FullProof
 ): Promise<boolean> {
-  return fullProof.valid;
+  const vKey = JSON.parse(fs.readFileSync("src/hash.vkey.json"));
+  const expectedPublicOutput = '2739947043113102211213481732989651354652885696224258258437228137624096577594';
+  const proofVerify = await snarkjs.groth16.verify(vKey, fullProof.publicSignals, fullProof.proof);
+
+  console.log("proof verify:", proofVerify);
+  console.log("matches:", fullProof.publicSignals[0] === expectedPublicOutput);
+  const res = proofVerify && fullProof.publicSignals[0] === expectedPublicOutput;
+
+  if (res) {
+      console.log("Verification OK");
+  } else {
+      console.log("Invalid proof");
+  }
+
+  return res;
 }

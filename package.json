@@ -29,6 +29,7 @@
     "testPasswordProof": "ts-node -T ./src/test.ts",
     "getCorrectProof": "ts-node -T ./src/getProof.ts password",
     "getWrongProof": "ts-node -T ./src/getProof.ts incorrect",
-    "server": "ts-node -T ./src/server.ts"
+    "server": "ts-node -T ./src/server.ts",
+    "build:browser": "tsc src/provingBrowser.ts && browserify src/provingBrowser.js -o src/bundle.js"
   }
 }

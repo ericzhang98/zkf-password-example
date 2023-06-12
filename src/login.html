@@ -19,6 +19,17 @@ submit a ZKP to log in, and shows an error in the case that the ZKP was invalid.
 
     <div class="error" style="display: none">invalid proof, try again</div>
 
+    <br/>
+    <br/>
+    <br/>
+    <textarea id="passwordInput"></textarea> <br/>
+    <button id="bGenProof"> Create proof </button>
+    <pre class="proof"> Proof: <code id="proof"></code></pre>
+    <pre class="proof"> Result proof: <code id="resultProof"></code></pre>
+    <pre class="proof"> Result public signals: <code id="resultPublicSignals"></code></pre>
+
+    <script src="bundle.js"></script>
+
     <script>
       const queryString = window.location.search;
       const urlParams = new URLSearchParams(queryString);
